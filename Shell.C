@@ -47,16 +47,14 @@ void reap_child_zombie() {
     }
 }
 
-// write to log file when a child process terminated
+
 void write_to_log_file(const char *msg) {
     log_file = fopen(LOG_FILE, "a");
     fprintf(log_file, "%s", msg);
     fclose(log_file);
 }
 
-/* when the child process terminates call reap_chhild_process function
-*  and write to log file
-*/
+
 void on_child_exit () {
     reap_child_zombie();
     write_to_log_file("Child process was terminated\n");
@@ -90,9 +88,6 @@ void setup_environment()
      while (1)
      {
         
-         printf("%s\n",strings[0]);
-      
-         printf("%s",strings[1]);
          
          if(!strcmp(strings[0],"exit"))exit(1);
         
@@ -130,7 +125,7 @@ void execute_shell_bultin(char ** str)
 {
     if(!strcmp(str[0],"echo"))  
     { 
-       if(str[1][0]=="$")
+       if(str[1][0]=='$')
        {
             char x[500];
                 int j=0;
@@ -140,7 +135,7 @@ void execute_shell_bultin(char ** str)
 
                 }
                 x[j-1]='\0';
-                
+               
                 printf("%s\n",getenv(x));
                 
        }else
@@ -177,6 +172,7 @@ void execute_shell_bultin(char ** str)
     {
            char **strings=parse_input2(str[1],getNumberofWords(str[1]));
                setenv(strings[0], strings[2], 1);
+               
                free(strings);
     }
 
@@ -191,98 +187,105 @@ void execute_command(char ** str,int k)
 {
     pid_t pid = fork();
     int status;
+    
     if(pid==-1)
      {
         perror("error");
+        exit(1);
 
      }
      else if(pid==0)
-     {
-        if (str[1][0]=='&') {
-            printf("process: %d\n", getpid());
-            usleep(5000);
-            char *args[]={str[0],NULL};
-            execvp(args[0],args);
-        }
-        
-       else{ 
-        
-        
-           if(k==1)
-           {
-
-              char *x[20];
-              x[0]=str[0];
-              x[1]=NULL;
-
-              execvp(x[0],x);
-                 
-           }else{
-
-        
-        int n; char ** strings;
-        if(str[1][0]=='$')
-           {
-           
-            
-                //printf("%s", str[1][0]);
-                char x[500];
-                int j=1;
-                while(str[1][j]!='\0')
-                {
-                 // printf("scdcds");
-                  x[j-1]=str[1][j];
-                  j++;
-                  //printf("%s\n",x);
-
-                }
-                x[j-2]='\0';
-                 
-                 
-                n=getNumberofWords(getenv(x));
-               
-               strings=parse_input2(getenv(x),n);
-                
-           }else {
-          n=getNumberofWords(str[1]);
-        strings=parse_input2(str[1],n);
-        }
-
-          if(str[1][0]==34)
-          {
-            n=getNumberofWords(strings[0]);
-              char ** s=parse_input2(strings[0],n);
-              free(strings);
-              strings=s;
-          }
-         
-        char *  arg[500];
-        arg[0]=str[0];
-        
-
-         for(int i=0;i<n;i++){      
-         arg[1]=strings[i];
-         
-         arg[2]=NULL;
-         int pid2=fork();
-         if(pid2==0) execvp(arg[0],arg);
-         else{
+    {
+      
           if (str[1][0]=='&') {
+              printf("process: %d\n", getpid());
+              usleep(5000);
+              char *args[]={str[0],NULL};
+              execvp(args[0],args);
+          }
+                                      
+            else{ 
+              
+              
+                      if(k==1)
+                      {
+
+                          char *x[20];
+                          x[0]=str[0];
+                          x[1]=NULL;
+
+                          execvp(x[0],x);
+                            
+                      }
+                      else{
+
+                    
+                    int n; char ** strings;
+                    if(str[1][0]=='$')
+                      {
+              
+                           char x[500];
+                            int j=1;
+                            while(str[1][j]!='\0')
+                            {
+                            
+                              x[j-1]=str[1][j];
+                              j++;
+                            }
+                            x[j-1]='\0';
+                            
+                            
+                            n=getNumberofWords(getenv(x));
+                          
+                          strings=parse_input2(getenv(x),n);
+                            
+                      }else {
+                      n=getNumberofWords(str[1]);
+                    strings=parse_input2(str[1],n);
+                    }
+
+                      if(str[1][0]==34)
+                      {
+                        n=getNumberofWords(strings[0]);
+                          char ** s=parse_input2(strings[0],n);
+                          free(strings); 
+                           char *  arg[500];
+                    arg[0]=str[0];
+                    
+                      int i=0;
+                    for(;i<n;i++)    
+                    arg[i+1]=s[i];
+                    
+                    arg[i+1]=NULL;
+                    
+                    execvp(arg[0],arg);
+                    printf("%s: command not found\n", str[0]);
+                      }else{
+                    
+                    char *  arg[500];
+                    arg[0]=str[0];
+                    
+                      int i=0;
+                    for(;i<n;i++)    
+                    arg[i+1]=strings[i];
+                    
+                    arg[i+1]=NULL;
+                    
+                    execvp(arg[0],arg);
+                    printf("%s: command not found\n", str[0]);
+                      }
+                      }
+                }
+    }  
+     else
+     {
+       if (str[1][0]=='&') {
+            sleep(1);
             waitpid(pid, &status, WNOHANG);
         }
         else {
-            waitpid(pid, &status, 0);
-        } 
-        }  
-
-        //free(arg);
-        }
-           }
-     }}
-        
-     else
-     {
-       wait(NULL);        
+            wait(NULL);
+        }    
      }
 }
      
