@@ -38,12 +38,10 @@ int main()
 
 void reap_child_zombie() {
     while(1) {
+      
         int status;
         pid_t child = waitpid((pid_t)(-1), &status, WNOHANG);
-        if (child == 0)
-            break;
-        else if (child == -1)
-            break;
+        if (child == 0||child == -1)break;   
     }
 }
 
@@ -201,7 +199,8 @@ void execute_command(char ** str,int k)
               printf("process: %d\n", getpid());
               usleep(5000);
               char *args[]={str[0],NULL};
-              execvp(args[0],args);
+              int x=execvp(args[0],args);
+              if(x==-1)printf("%s: command not found\n", str[0]);
           }
                                       
             else{ 
@@ -214,7 +213,8 @@ void execute_command(char ** str,int k)
                           x[0]=str[0];
                           x[1]=NULL;
 
-                          execvp(x[0],x);
+                          int y=execvp(x[0],x);
+                    if(y==-1)printf("%s: command not found\n", str[0]);
                             
                       }
                       else{
@@ -258,8 +258,8 @@ void execute_command(char ** str,int k)
                     
                     arg[i+1]=NULL;
                     
-                    execvp(arg[0],arg);
-                    printf("%s: command not found\n", str[0]);
+                    int x=execvp(arg[0],arg);
+                    if(x==-1)printf("%s: command not found\n", str[0]);
                       }else{
                     
                     char *  arg[500];
@@ -271,8 +271,8 @@ void execute_command(char ** str,int k)
                     
                     arg[i+1]=NULL;
                     
-                    execvp(arg[0],arg);
-                    printf("%s: command not found\n", str[0]);
+                    int x=execvp(arg[0],arg);
+                    if(x==-1)printf("%s: command not found\n", str[0]);
                       }
                       }
                 }
@@ -280,7 +280,7 @@ void execute_command(char ** str,int k)
      else
      {
        if (str[1][0]=='&') {
-            sleep(1);
+            sleep(2);
             waitpid(pid, &status, WNOHANG);
         }
         else {
